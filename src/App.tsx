@@ -27,24 +27,27 @@ export default function App() {
   console.log(auth, "##$$auth");
   console.log(database, "##$$database");
 
-  const writeUserData = (
+  const writeUserData = async (
     userId: string | undefined,
     username: string | null,
     email: string | null,
     imageUrl?: string | undefined | null,
     role?: string,
   ) => {
-    const db = getDatabase();
-    set(ref(db, "users/" + userId), {
-      username,
-      email,
-      imageUrl,
-      role: STRING_NORMAL,
-    })
-      .then(() => alert("Data saved successfully!"))
-      .catch((error) =>
-        console.error("Something wrong.. please check your code\n", error),
-      );
+    try {
+      const db = getDatabase();
+      const usersRef = ref(db, "users/" + userId);
+      const usersObj = {
+        username,
+        email,
+        imageUrl,
+        role: STRING_NORMAL,
+      };
+      await set(usersRef, usersObj);
+      alert("Data saved successfully!");
+    } catch (error) {
+      console.error("Something wrong.. please check your code\n", error);
+    }
   };
 
   const handleSignIn = () => {
@@ -88,16 +91,32 @@ export default function App() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const db = getDatabase();
-    set(ref(db, `test/${testVal}`), {
-      username: "testname",
-      email: "testemail",
-    })
-      .then(() => {
-        setTestVal("");
-        console.log("Data seved successfully!");
-      })
-      .catch((error) => console.error("Something wrong", error));
+  };
+
+  const handleSave = async () => {
+    try {
+      const db = getDatabase();
+      const testRef = ref(db, `test/${testVal}`);
+      const testObj = {
+        username: "testname",
+        email: "testemail",
+      };
+      await set(testRef, testObj);
+      setTestVal("");
+    } catch (error) {
+      console.error("Something wrong", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const db = getDatabase();
+      const testRef = ref(db, `test/${testVal}`);
+      await set(testRef, null);
+      setTestVal("");
+    } catch (error) {
+      console.error("Something wrong", error);
+    }
   };
 
   return (
@@ -105,10 +124,10 @@ export default function App() {
       <button onClick={handleSignIn}>SignIn</button>
       <button onClick={handleSignOut}>SignOut</button>
       <hr />
-
       <form onSubmit={handleSubmit}>
         <input type='text' value={testVal} onChange={handleChagne} />
-        <button>Save</button>
+        <button onClick={handleSave}>Save</button>
+        <button onClick={handleDelete}>Delete</button>
       </form>
     </div>
   );
